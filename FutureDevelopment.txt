@@ -1,0 +1,6 @@
+Future development and changes:
+
+Main problewm: lack of support for required options/parameters
+Fix current bugs when processing optional parameters
+Entirely swap use to collections to arrayLists to promote ease of use for future develpment
+Develop basic UI for usage via end-client (provided one does no tyet exist) to promote ease of use

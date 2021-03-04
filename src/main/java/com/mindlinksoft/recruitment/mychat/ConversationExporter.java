@@ -17,6 +17,7 @@ import java.util.List;
  * Represents a conversation exporter that can read a conversation and write it out in JSON.
  */
 public class ConversationExporter {
+	static ConversationExporterConfiguration configuration;
 
     /**
      * The application entry point.
@@ -25,7 +26,7 @@ public class ConversationExporter {
      */
     public static void main(String[] args) throws Exception {
         // We use picocli to parse the command line - see https://picocli.info/
-        ConversationExporterConfiguration configuration = new ConversationExporterConfiguration();
+        configuration = new ConversationExporterConfiguration();
         CommandLine cmd = new CommandLine(configuration);
 
         try {
@@ -131,6 +132,40 @@ public class ConversationExporter {
             throw new Exception("Something went wrong");
         }
     }
+
+	/**
+	* Edits conversation as per the optional parameters from the console command
+	*/
+	public Conversation editConversation(Conversation conversation){
+		List tmp_list = new ArrayList<>(conversation.messages);
+		//filter by user
+		if (!configuration.filterByUser.isEmpty()){
+			for (int i = tmp_list.size(); i > 0; i--){
+				if (!tmp_list.get(i).senderId.equals(configuration.filterByUser)){
+					tmp_list.remove(i);
+				}
+			}
+		}
+		
+		//filter by keyword
+		if (!configuration.filterByKeyword.isEmpty()){
+			for (int i = tmp_list.size(); i > 0; i--){
+				if (!tmp_list.get(i).content.contains(configuration.filterByKeyword)){
+					tmp_list.messages.remove(i);
+				}
+			}
+		}
+		
+		//replace blacklist words
+		if (!configuration.blacklist.isEmpty()){
+			for (int i = tmp_list.size(); i > 0; i--){
+				for (String blacklist_word : configuration.blacklist){
+					tmp_list.get(i).content.replaceAll(blacklist_word, "\\*redacted\\*");
+				}
+			}
+		}
+		conversation.messages = tmp_list;
+	}
 
     class InstantSerializer implements JsonSerializer<Instant> {
         @Override
